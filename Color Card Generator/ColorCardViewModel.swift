@@ -4,26 +4,43 @@
 //
 //  Created by Shreya Prasad on 01/08/25.
 //
+import SwiftUI
 import SwiftData
-import Foundation
+import Network
 
 @Observable
-class ColorManagerViewModel  {
-    
+class ColorCardViewModel {
     private var modelContext: ModelContext
     
-    // The ViewModel now holds and manages the data
-    @Query(sort: \ColorModel.timeStamp, order: .reverse)
-    var colorModels: [ColorModel]
+    // Network monitoring properties
+    private let networkMonitor = NWPathMonitor()
+    private let workerQueue = DispatchQueue(label: "NWMonitor")
+    var isConnected = false
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
-        // Initialize the query with the context
-        self._colorModels = Query(sort: \ColorModel.timeStamp, order: .reverse)
+        // Initialize network status first
+        isConnected = false
+        setupNetworkMonitoring()
     }
     
+    // MARK: - Network Monitoring
+    private func setupNetworkMonitoring() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                self?.isConnected = path.status == .satisfied
+                print("Network status changed: \(path.status == .satisfied ? "Connected" : "Disconnected")")
+            }
+        }
+        networkMonitor.start(queue: workerQueue)
+    }
+    
+    func stopNetworkMonitoring() {
+        networkMonitor.cancel()
+    }
+    
+    // MARK: - Color Card Management
     func addColorCard() {
-        // Generate random hex code directly in ViewModel
         let newCard = ColorModel(
             hexCode: generateRandomHexCode(),
             timeStamp: .now
@@ -37,7 +54,7 @@ class ColorManagerViewModel  {
         }
     }
     
-    func deleteCards(at indexSet: IndexSet) {
+    func deleteCards(at indexSet: IndexSet, from colorModels: [ColorModel]) {
         for index in indexSet {
             let card = colorModels[index]
             modelContext.delete(card)
@@ -50,11 +67,15 @@ class ColorManagerViewModel  {
         }
     }
     
-    // Private helper function to generate random hex codes
+    // MARK: - Private Helper Methods
     private func generateRandomHexCode() -> String {
         let red = Int.random(in: 0...255)
         let green = Int.random(in: 0...255)
         let blue = Int.random(in: 0...255)
         return String(format: "#%02X%02X%02X", red, green, blue)
+    }
+    
+    deinit {
+        networkMonitor.cancel()
     }
 }

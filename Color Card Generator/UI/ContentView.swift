@@ -19,15 +19,17 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-            
-            Button("Generate cards") {
-                viewModel?.addColorCard()
+            HStack{
+                Button("Generate cards") {
+                    viewModel?.addColorCard()
+                }
+                .font(.title3)
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .frame(maxWidth: 250)
+                
+                NetworkView(isConnected: viewModel?.isConnected ?? false)
             }
-            .font(.title3)
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .frame(maxWidth: 250)
-            
             List {
                 ForEach(colorModels) { colorModel in
                     ColorCard(model: colorModel)
@@ -43,5 +45,13 @@ struct ContentView: View {
                 viewModel = ColorCardViewModel(modelContext: modelContext)
             }
         }
+        .onDisappear {
+            viewModel?.stopNetworkMonitoring()
+        }
     }
+}
+
+#Preview {
+    ContentView()
+        .modelContainer(for: ColorModel.self, inMemory: true)
 }
