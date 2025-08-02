@@ -67,7 +67,7 @@ class ColorCardViewModel {
         }
     }
     
-    // MARK: - Private Helper Methods
+   
     private func generateRandomHexCode() -> String {
         let red = Int.random(in: 0...255)
         let green = Int.random(in: 0...255)
