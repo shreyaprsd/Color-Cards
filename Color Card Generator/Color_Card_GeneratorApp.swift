@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct Color_Card_GeneratorApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .modelContainer(for: [ColorModel.self])
         }
     }
 }
