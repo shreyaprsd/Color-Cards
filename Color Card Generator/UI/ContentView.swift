@@ -12,7 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ColorModel.timeStamp, order: .reverse) var colorModels: [ColorModel]
     @State private var viewModel: ColorCardViewModel?
-    
+    @State private var networkMonitor = NetworkMonitor()
     var body: some View {
         VStack(spacing: 20) {
             Text("Color Cards 🎨")
@@ -28,7 +28,7 @@ struct ContentView: View {
                 .buttonBorderShape(.capsule)
                 .frame(maxWidth: 250)
                 
-                NetworkView(isConnected: viewModel?.isConnected ?? false)
+                NetworkView(isConnected: networkMonitor.isConnected ?? false)
             }
             List {
                 ForEach(colorModels) { colorModel in
@@ -47,9 +47,7 @@ struct ContentView: View {
                 viewModel = ColorCardViewModel(modelContext: modelContext)
             }
         }
-        .onDisappear {
-            viewModel?.stopNetworkMonitoring()
-        }
+      
     }
 }
 

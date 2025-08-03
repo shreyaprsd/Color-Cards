@@ -16,15 +16,8 @@ class ColorCardViewModel {
     private let db = Firestore.firestore()
     private let collectionName = "cards"
     
-    // Network monitoring properties
-    private let networkMonitor = NWPathMonitor()
-    private let workerQueue = DispatchQueue(label: "NWMonitor")
-    var isConnected = false
-    
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
-        isConnected = false
-        setupNetworkMonitoring()
         loadInitialData()
     }
 
@@ -38,22 +31,6 @@ class ColorCardViewModel {
             }
         }
     }
-    
-    // MARK: - Network Monitoring
-    private func setupNetworkMonitoring() {
-        networkMonitor.pathUpdateHandler = { [weak self] path in
-            DispatchQueue.main.async {
-                self?.isConnected = path.status == .satisfied
-                print("Network status changed: \(path.status == .satisfied ? "Connected" : "Disconnected")")
-            }
-        }
-        networkMonitor.start(queue: workerQueue)
-    }
-    
-    func stopNetworkMonitoring() {
-        networkMonitor.cancel()
-    }
-    
     
     func addColorCard()  {
         let newCard = ColorModel(
@@ -104,9 +81,7 @@ class ColorCardViewModel {
         return String(format: "#%02X%02X%02X", red, green, blue)
     }
     
-    deinit {
-        networkMonitor.cancel()
-    }
+  
     
     func fetchDataFromFireStore() async throws -> [ColorModel] {
         let snapshot = try await db.collection(collectionName).getDocuments()
