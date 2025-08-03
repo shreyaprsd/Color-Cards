@@ -12,7 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ColorModel.timeStamp, order: .reverse) var colorModels: [ColorModel]
     @State private var viewModel: ColorCardViewModel?
-    @State private var networkMonitor = NetworkMonitor()
+    @ObservedObject private var networkMonitor = NetworkMonitor()
     var body: some View {
         VStack(spacing: 20) {
             Text("Color Cards 🎨")
