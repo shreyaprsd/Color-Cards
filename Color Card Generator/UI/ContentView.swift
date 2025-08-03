@@ -36,7 +36,7 @@ struct ContentView: View {
                 }
                 .onDelete { indexSet in
                     Task{
-                      await  viewModel?.deleteCards(at: indexSet, from: colorModels)
+                        await  viewModel?.deleteCards(at: indexSet, from: colorModels)
                     }
                 }
             }
@@ -44,10 +44,14 @@ struct ContentView: View {
         .padding()
         .onAppear {
             if viewModel == nil {
-                viewModel = ColorCardViewModel(modelContext: modelContext)
+                let colorRepository = ColorRepository(modelContext: modelContext) // or howevoer you create it
+                viewModel = ColorCardViewModel(
+                    modelContext: modelContext,
+                    colorRepository: colorRepository
+                )
             }
         }
-      
+        
     }
 }
 
