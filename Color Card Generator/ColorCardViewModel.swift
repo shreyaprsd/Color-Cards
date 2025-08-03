@@ -27,7 +27,7 @@ class ColorCardViewModel {
     private func loadInitialData() {
         Task {
             do {
-                _ = try await fetchDataFromFireStore()
+                try await colorRepository.fetchDataFromFireStore()
             } catch {
                 print("Error loading initial data: \(error.localizedDescription)")
             }
@@ -48,18 +48,9 @@ class ColorCardViewModel {
     func deleteCards(at indexSet: IndexSet, from colorModels: [ColorModel]) async {
         for index in indexSet {
             let card = colorModels[index]
+               await colorRepository.deleteCards(at: indexSet, from: colorModels)
+                print("Successfully deleted card )")
             
-            do {
-                // Delete from Firestore first
-                try await deleteColorFromFireStore(colorModel: card)
-                // Then delete locally
-                modelContext.delete(card)
-                try modelContext.save()
-                print("Successfully deleted card with hex: \(card.hexCode)")
-            } catch {
-                print("Error deleting card with hex \(card.hexCode): \(error.localizedDescription)")
-                // You might want to show an alert to the user here
-            }
         }
     }
     
@@ -72,40 +63,10 @@ class ColorCardViewModel {
     
     
     
-    func fetchDataFromFireStore() async throws -> [ColorModel] {
-        let snapshot = try await db.collection(collectionName).getDocuments()
-        do {
-            return try snapshot.documents.compactMap { document in
-                let firestoreColor = try document.data(as: RemoteColorModel.self)
-                
-                let colorModel = firestoreColor.toColorModel()
-                return colorModel
-                
-            }
-        } catch {
-            print("Error getting documents: \(error)")
-            return []
-        }
-    }
+
     
     
-    func deleteColorFromFireStore(colorModel: ColorModel) async throws {
-        let remoteModel = RemoteColorModel(model: colorModel)
-        
-        let querySnapshot = try await db.collection(collectionName)
-            .whereField("id", isEqualTo: remoteModel.id)
-            .getDocuments()
-        
-        // Delete all matching documents (should typically be just one)
-        for document in querySnapshot.documents {
-            try await document.reference.delete()
-            print("Document deleted with ID: \(document.documentID)")
-        }
-        
-        if querySnapshot.documents.isEmpty {
-            print("Warning: No document found with id: \(remoteModel.id)")
-        }
-    }
+    
 }
 
 

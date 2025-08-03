@@ -28,7 +28,7 @@ struct ContentView: View {
                 .buttonBorderShape(.capsule)
                 .frame(maxWidth: 250)
                 
-                NetworkView(isConnected: networkMonitor.isConnected ?? false)
+                NetworkView(isConnected: networkMonitor.isConnected)
             }
             List {
                 ForEach(colorModels) { colorModel in

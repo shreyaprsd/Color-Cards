@@ -9,7 +9,7 @@ import SwiftData
 import SwiftUI
 
 @Model
-class ColorModel {
+class ColorModel  {
     var hexCode: String
     var timeStamp: Date
     @Attribute(.unique) var id = UUID()
