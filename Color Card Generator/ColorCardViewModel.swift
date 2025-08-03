@@ -15,12 +15,14 @@ class ColorCardViewModel {
     
     private let db = Firestore.firestore()
     private let collectionName = "cards"
-    
-    init(modelContext: ModelContext) {
+    private  var colorRepository : ColorRepository
+    init(modelContext: ModelContext , colorRepository: ColorRepository) {
         self.modelContext = modelContext
+        self.colorRepository = colorRepository
         loadInitialData()
+        
     }
-
+    
     // MARK: - Data Loading
     private func loadInitialData() {
         Task {
@@ -37,24 +39,11 @@ class ColorCardViewModel {
             hexCode: generateRandomHexCode(),
             timeStamp: .now
         )
+        colorRepository.addColor(newCard)
         
-        do {
-            modelContext.insert(newCard)
-            try modelContext.save()
-            let result = try addColorToFireStore(colorModel: newCard)
-            switch result {
-            case .success(let documentID):
-                print("Successfully synced card with ID: \(documentID)")
-            case .failure(let error):
-                print("Failed to sync to Firestore: \(error.localizedDescription)")
-               
-            }
-        } catch {
-            print("Error saving color card locally: \(error.localizedDescription)")
-        }
     }
-   
-
+    
+    
     
     func deleteCards(at indexSet: IndexSet, from colorModels: [ColorModel]) async {
         for index in indexSet {
@@ -81,14 +70,14 @@ class ColorCardViewModel {
         return String(format: "#%02X%02X%02X", red, green, blue)
     }
     
-  
+    
     
     func fetchDataFromFireStore() async throws -> [ColorModel] {
         let snapshot = try await db.collection(collectionName).getDocuments()
         do {
             return try snapshot.documents.compactMap { document in
                 let firestoreColor = try document.data(as: RemoteColorModel.self)
-            
+                
                 let colorModel = firestoreColor.toColorModel()
                 return colorModel
                 
@@ -99,18 +88,6 @@ class ColorCardViewModel {
         }
     }
     
-    func addColorToFireStore(colorModel: ColorModel)  throws -> Result<String, Error> {
-        let remoteModel = RemoteColorModel(model: colorModel)
-        
-        do {
-            let ref = try  db.collection(collectionName).addDocument(from: remoteModel)
-            print("Document added with ID: \(ref.documentID)")
-            return .success(ref.documentID)
-        } catch {
-            print("Error adding document to Firestore: \(error.localizedDescription)")
-            return .failure(error)
-        }
-    }
     
     func deleteColorFromFireStore(colorModel: ColorModel) async throws {
         let remoteModel = RemoteColorModel(model: colorModel)
