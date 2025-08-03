@@ -18,7 +18,7 @@ import Foundation
 import SwiftUI
 import FirebaseCore
 
-struct RemoteColorModel {
+struct RemoteColorModel: Decodable , Encodable {
     var id : String
     var hexCode : String
     var timeStamp : Timestamp
@@ -32,10 +32,6 @@ struct RemoteColorModel {
     
     func toColorModel() -> ColorModel {
         return ColorModel(hexCode: self.hexCode, timeStamp: self.timeStamp.dateValue(), id: UUID(uuidString: self.id) ?? UUID())
-    }
-    
-    func fromColorModel(_ model: ColorModel) -> RemoteColorModel {
-        
     }
     
     

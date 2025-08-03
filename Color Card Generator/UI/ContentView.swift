@@ -35,7 +35,9 @@ struct ContentView: View {
                     ColorCard(model: colorModel)
                 }
                 .onDelete { indexSet in
-                    viewModel?.deleteCards(at: indexSet, from: colorModels)
+                    Task{
+                      await  viewModel?.deleteCards(at: indexSet, from: colorModels)
+                    }
                 }
             }
         }
